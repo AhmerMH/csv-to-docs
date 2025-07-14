@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV to DOCX Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .file-input-container {
+            width: 100%;
+            position: relative;
+            text-align: center;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 2rem;
+            background: #f7fafc;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .file-input-label span {
+            display: block;
+            color: #4a5568;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            width: 0;
+            height: 0;
+            opacity: 0;
+        }
+
+        .button {
+            background-color: #4299e1;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .download-container {
+            width: 100%;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .download-box {
+            background: #f7fafc;
+            border: 2px solid #48bb78;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .download-box.disabled {
+            border-color: #cbd5e0;
+            background: #f1f1f1;
+            cursor: not-allowed;
+        }
+
+        .download-box .icon {
+            color: #48bb78;
+            margin-bottom: 0.5rem;
+        }
+
+        .download-box.disabled .icon {
+            color: #cbd5e0;
+        }
+
+        #downloadBtn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: #48bb78;
+            margin-top: 0.5rem;
+        }
+
+        #downloadBtn.disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        #downloadBtn:hover:not(.disabled) {
+            background-color: #38a169;
+        }
+
+        #status {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .status-converting {
+            color: #4a5568;
+            background-color: #edf2f7;
+        }
+
+        .status-success {
+            color: #2f855a;
+            background-color: #f0fff4;
+        }
+
+        .status-error {
+            color: #c53030;
+            background-color: #fff5f5;
+        }
+
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #4299e1;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSV to DOCX Converter</h1>
+        <form id="uploadForm" class="upload-form">
+            <div class="file-input-container">
+                <label class="file-input-label">
+                    <div class="icon">📄</div>
+                    <input type="file" id="csvFile" accept=".csv" required>
+                    <span id="fileNameDisplay">Drop your CSV file here or click to browse</span>
+                </label>
+            </div>
+            <button type="submit" class="button">Convert to DOCX</button>
+        </form>
+        <div id="status"></div>
+        <div class="download-container">
+            <div id="downloadBox" class="download-box disabled">
+                <div class="icon">⬇️</div>
+                <p>Your DOCX file is ready!</p>
+                <a id="downloadBtn" class="button disabled" download>
+                    <span>Download DOCX</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const status = document.getElementById('status');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadBox = document.getElementById('downloadBox');
+        const fileInput = document.getElementById('csvFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+        fileInput.addEventListener('change', (e) => {
+            const fileName = e.target.files[0]?.name || 'No file selected';
+            fileNameDisplay.textContent = fileName;
+            // Reset download state when new file is selected
+            downloadBox.style.display = 'none';
+            downloadBtn.classList.add('disabled');
+            downloadBox.classList.add('disabled');
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            
+            if (!fileInput.files[0]) {
+                status.textContent = 'Please select a CSV file';
+                status.className = 'status-error';
+                return;
+            }
+
+            formData.append('file', fileInput.files[0]);
+            status.textContent = 'Converting...';
+            status.className = 'status-converting';
+            downloadBox.style.display = 'none';
+            downloadBtn.classList.add('disabled');
+            downloadBox.classList.add('disabled');
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Conversion failed');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                downloadBtn.href = url;
+                downloadBtn.download = `output_${new Date().toISOString().slice(0,13).replace(/[-:]/g, '')}.docx`;
+                downloadBox.style.display = 'block';
+                downloadBtn.classList.remove('disabled');
+                downloadBox.classList.remove('disabled');
+                status.textContent = 'Conversion successful!';
+                status.className = 'status-success';
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+                status.className = 'status-error';
+                downloadBox.style.display = 'none';
+                downloadBtn.classList.add('disabled');
+                downloadBox.classList.add('disabled');
+            }
+        });
+    </script>
+</body>
+</html> 

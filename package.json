@@ -1,8 +1,9 @@
 {
   "name": "file-training",
   "version": "1.0.0",
-  "main": "process-csv.js",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -10,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
     "docx": "^9.5.1",
     "express": "^5.1.0",
     "multer": "^2.0.1"

@@ -2,10 +2,14 @@ const express = require('express');
 const multer = require('multer');
 const docx = require('docx');
 const { Document, Paragraph, Packer } = docx;
+const cors = require('cors');
 
 const app = express();
 // Configure multer to use memory storage instead of disk
 const upload = multer({ storage: multer.memoryStorage() });
+
+// Enable CORS
+app.use(cors());
 
 // Serve static files from public directory
 app.use(express.static('public'));
